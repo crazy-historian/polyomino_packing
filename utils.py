@@ -19,24 +19,27 @@ def print_grid(grid: list[list[int]]) -> None:
         print(line, end='\n')
 
 
-def init_distances(grid: list[list[int]]) -> tuple[list, list]:
+def init_distances(height: int, width: int) -> list:
     """
     Fill in the distance matrix with the appropriate values.
     """
     coordinates = list()
     coordinates.append([0, 0])
-    for i in range(1, len(grid)):
+    # radii = list()
+    for i in range(1, height):
+        # coordinates = list()
         for j in range(i + 1):
-            if i < len(grid[0]):
-                grid[j][i] = i
+            if i < width:
                 coordinates.append([j, i])
 
         for j in range(i, 0, -1):
-            if j <= len(grid[0]):
-                grid[i][j - 1] = i
+            if j <= width:
                 coordinates.append([i, j - 1])
 
-    return grid, coordinates
+        # radii.append(coordinates)
+
+    # radii.insert(0, [0, 0])
+    return coordinates
 
 
 def are_coords_free(figure_coords: list, grid: list[list[int]]) -> True:
@@ -54,13 +57,13 @@ def are_coords_free(figure_coords: list, grid: list[list[int]]) -> True:
     return True
 
 
-def count_cost(figure_coords: list, grid: list[list[int]]) -> int:
+def count_cost(figure_coords: list) -> int:
     """
     Count the cost of the possible figure position.
     """
     cost = 0
     for coord in figure_coords:
-        cost += coord[0] + coord[1] + grid[coord[0]][coord[1]]
+        cost += coord[0] + coord[1] + max(coord[0], coord[1])
 
     return cost
 
