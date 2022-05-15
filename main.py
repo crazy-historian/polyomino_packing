@@ -1,215 +1,83 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from abc import ABC, abstractmethod
+import argparse
 
-HEIGHT = 7
-WIDTH = 4
+from polyomino import *
+from utils import *
 
+parser = argparse.ArgumentParser(description='Packing polyomino in a grid')
+parser.add_argument('-grid_size', nargs=2, type=int)
+parser.add_argument('-l_polyomino', type=int, nargs='+',
+                    action='append', help='Each L-polyomino described with triple of numbers:'
+                                          'length, ledge and number of instances')
+parser.add_argument('-r_polyomino', type=int, nargs='+',
+                    action='append', help='Each rectangular polyomino described with triple of numbers:'
+                                          'width, height and number of instances')
+args = parser.parse_args()
+
+HEIGHT = args.grid_size[0]
+WIDTH = args.grid_size[1]
 NUM_OF_ROTATIONS = 4
 
 grid_occupation = [[0 for _ in range(WIDTH)] for _ in range(HEIGHT)]
 grid_distances = [[0 for _ in range(WIDTH)] for _ in range(HEIGHT)]
 
 
-# cmap = [
-#     'Accent', 'Accent_r', 'Blues',
-#     'Blues_r', 'BrBG', 'BrBG_r',
-#     'BuGn', 'BuGn_r', 'BuPu', 'BuPu_r',
-#     'CMRmap', 'CMRmap_r', 'Dark2', 'Dark2_r',
-#     'GnBu', 'GnBu_r', 'Greens', 'Greens_r', 'Greys', 'Greys_r', 'OrRd', 'OrRd_r', 'Oranges', 'Oranges_r', 'PRGn', 'PRGn_r', 'Paired', 'Paired_r', 'Pastel1',
-#            'Pastel1_r', 'Pastel2'
-#         'Pastel2_r', 'PiYG', 'PiYG_r', 'PuBu', 'PuBuGn', 'PuBuGn_r', 'PuBu_r', 'PuOr', 'PuOr_r', 'PuRd', 'PuRd_r',
-#     'Purples', 'Purples_r', 'RdBu', 'RdBu_r', 'RdGy', 'RdGy_r', 'RdPu', 'RdPu_r', 'RdYlBu', 'RdYlBu_r', 'RdYlGn',
-#     'RdYlGn_r', 'Reds', 'Reds_r', 'Set1', 'Set1_r', 'Set2', 'Set2_r', 'Set3', 'Set3_r', 'Spectral', 'Spectral_r',
-#     'Wistia', 'Wistia_r', 'YlGn', 'YlGnBu', 'YlGnBu_r', 'YlGn_r', 'YlOrBr', 'YlOrBr_r', 'YlOrRd', 'YlOrRd_r',
-#     'afmhot', 'afmhot_r', 'autumn', 'autumn_r', 'binary', 'binary_r', 'bone', 'bone_r', 'brg', 'brg_r', 'bwr',
-#     'bwr_r', 'cividis', 'cividis_r', 'cool', 'cool_r', 'coolwarm', 'coolwarm_r', 'copper', 'copper_r', 'cubehelix',
-#     'cubehelix_r', 'flag', 'flag_r', 'gist_earth', 'gist_earth_r', 'gist_gray', 'gist_gray_r', 'gist_heat',
-#     'gist_heat_r', 'gist_ncar', 'gist_ncar_r', 'gist_rainbow', 'gist_rainbow_r', 'gist_stern', 'gist_stern_r',
-#     'gist_yarg', 'gist_yarg_r', 'gnuplot', 'gnuplot2', 'gnuplot2_r', 'gnuplot_r', 'gray', 'gray_r', 'hot', 'hot_r',
-#     'hsv', 'hsv_r', 'inferno', 'inferno_r', 'jet', 'jet_r', 'magma',
+def pack_polyomino(polyomino_list: list[Polyomino], grid: list, show_grid: bool = False) -> bool:
+    for num, polyomino in enumerate(polyomino_list):
+        possibles_places = list()
+        for rotation_num in range(NUM_OF_ROTATIONS):
+            for coord in arcs:
+                polyomino.place_figure(0, 0)
+                polyomino.rotate(rotation_num)
+                polyomino.move_figure(coord[0], coord[1])
+                if are_coords_free(polyomino.coordinates, grid):
+                    possibles_places.append(
+                        (polyomino.coordinates, count_cost(polyomino.coordinates, grid_distances)))
 
-
-def plot_grid(grid: list):
-    plt.imshow(list(reversed(grid)))
-    plt.show()
-
-
-def print_grid(grid: list) -> None:
-    for line in reversed(grid):
-        print(line, end='\n')
-
-
-def init_distances(grid: list) -> tuple[list, list]:
-    coordinates = list()
-    coordinates.append([0, 0])
-    for i in range(1, HEIGHT):
-        for j in range(i + 1):
-            if i < WIDTH:
-                grid[j][i] = i
-                coordinates.append([j, i])
-
-        for j in range(i, 0, -1):
-            if j <= WIDTH:
-                grid[i][j - 1] = i
-                coordinates.append([i, j - 1])
-
-    return grid, coordinates
-
-
-def are_coords_free(figure_coords: list, grid: list) -> True:
-    for coord in figure_coords:
-        if coord[0] < 0 or coord[1] < 0:
+        if len(possibles_places) != 0:
+            place = find_best_place(possibles_places)
+            grid = place_figure_to_grid(place[0], grid, num + 1)
+            exclude_coordinates(place[0], arcs)
+        else:
             return False
-        try:
-            if grid[coord[0]][coord[1]] != 0:
-                return False
-        except IndexError:
-            return False
+
+        if show_grid:
+            print('---' * 3)
+            print(f'Figure {num + 1}: {polyomino}')
+            print_grid(grid)
+
     return True
 
 
-def sum_distances(figure_coords: list, grid: list) -> int:
-    sum = 0
-    for coord in figure_coords:
-        sum += coord[0] + coord[1] + grid[coord[0]][coord[1]]
-
-    return sum
-
-
-def place_figure_to_grid(figure_coords: list, grid: list, figure_num: int) -> list:
-    for coord in figure_coords:
-        grid[coord[0]][coord[1]] = figure_num
-    return grid
-
-
-def find_best_place(places: list[tuple[list, int]]):
-    min_sum = float('inf')
-    best_place = list()
-    for index, place in enumerate(places):
-        if place[1] < min_sum:
-            min_sum = place[1]
-            best_place = place
-    return best_place
-
-
-def exclude_coordinates(figure_coordinates, arcs):
-    for coord in figure_coordinates:
-        arcs.remove(coord)
-    return arcs
-
-
-class Polyomino(ABC):
-    def __init__(self, size: tuple):
-        self.size = size
-        self.area = self._count_area()
-        self.perimeter = self._count_perimeter()
-        self.coordinates = list()
-
-    def rotate(self, count: int) -> None:
-        rot_matrix = np.array(((0, -1),
-                               (1, 0)))
-
-        for _ in range(count):
-            for num, coord in enumerate(self.coordinates):
-                point = np.array(coord)
-                point = rot_matrix.dot(point)
-                self.coordinates[num] = point.tolist()
-
-    def move_figure(self, x: int, y: int) -> None:
-        for num, _ in enumerate(self.coordinates):
-            self.coordinates[num][0] += x
-            self.coordinates[num][1] += y
-
-    @abstractmethod
-    def place_figure(self, x: int, y: int):
-        ...
-
-    @abstractmethod
-    def _count_perimeter(self) -> int:
-        ...
-
-    @abstractmethod
-    def _count_area(self) -> int:
-        ...
-
-
-class LPolyomino(Polyomino):
-    def __init__(self, size: tuple):
-        self.length = max(size)
-        super().__init__(size)
-
-    def _count_area(self):
-        return self.size[0] + self.size[1] - 1
-
-    def _count_perimeter(self) -> int:
-        return 6 + 2 * (self.length - 2)
-
-    def place_figure(self, x: int, y: int):
-        self.coordinates = list()
-        for i in range(self.length):
-            self.coordinates.append([x, y + i])
-
-        self.coordinates.append([x + 1, y])
-
-    def __repr__(self):
-        return f'LP: size={self.size}, area={self.area}, perimeter={self.perimeter}'
-
-
-class RPolyomino(Polyomino):
-    def __init__(self, size: tuple):
-        super().__init__(size)
-
-    def _count_perimeter(self) -> int:
-        return 2 * self.size[0] + 2 * self.size[1]
-
-    def _count_area(self) -> int:
-        return self.size[0] * self.size[1]
-
-    def place_figure(self, x: int, y: int):
-        self.coordinates = list()
-        for i in range(self.size[0]):
-            for j in range(self.size[1]):
-                self.coordinates.append([x + i, y + j])
-
-    def __repr__(self):
-        return f'RP: size={self.size}, area={self.area}, perimeter={self.perimeter}'
-
-
-polyomino_list = [LPolyomino(size=(4, 2)), RPolyomino(size=(3, 2)),
-                  LPolyomino(size=(3, 2)), LPolyomino(size=(2, 2)),
-                  RPolyomino(size=(1, 2)), LPolyomino(size=(2, 2)), ]
-polyomino_list.sort(key=lambda x: (x.perimeter, -x.area), reverse=True)
-
-grid_distances, arcs = init_distances(grid_distances)
-
 if __name__ == "__main__":
-    def pack_polyomino(polyomino_list: list[Polyomino], grid: list, show_grid: bool = False) -> bool:
-        for num, polyomino in enumerate(polyomino_list):
-            possibles_places = list()
-            for rotation_num in range(NUM_OF_ROTATIONS):
-                for coord in arcs:
-                    polyomino.place_figure(0, 0)
-                    polyomino.rotate(rotation_num)
-                    polyomino.move_figure(coord[0], coord[1])
-                    if are_coords_free(polyomino.coordinates, grid):
-                        possibles_places.append(
-                            (polyomino.coordinates, sum_distances(polyomino.coordinates, grid_distances)))
 
-            if len(possibles_places) != 0:
-                place = find_best_place(possibles_places)
-                grid = place_figure_to_grid(place[0], grid, num + 1)
-                exclude_coordinates(place[0], arcs)
-            else:
-                return False
+    pol_list = list()
+    common_area = 0
 
-            if show_grid:
-                print('---' * 3)
-                print(f'Figure {num + 1}: {polyomino}')
-                print_grid(grid)
+    if args.l_polyomino is not None:
+        for l_polyomino in args.l_polyomino:
+            for _ in range(l_polyomino[2]):
+                polyomino = LPolyomino(size=(l_polyomino[0], l_polyomino[1]))
+                pol_list.append(polyomino)
+                common_area += polyomino.area
 
-        return True
+    if args.r_polyomino is not None:
+        for r_polyomino in args.r_polyomino:
+            for _ in range(r_polyomino[2]):
+                polyomino = RPolyomino(size=(r_polyomino[0], r_polyomino[1]))
+                pol_list.append(polyomino)
+                common_area += polyomino.area
 
+    print(f'A list of polyomino is given: {pol_list}')
+    grid_distances, arcs = init_distances(grid_distances)
+    pol_list.sort(key=lambda x: (x.perimeter, x.area), reverse=True)
 
-    print(pack_polyomino(polyomino_list, grid_occupation))
-    plot_grid(grid_occupation)
+    if len(pol_list) == 0:
+        print('Polyomino can NOT be packed to the grid: the list of figures is empty')
+    elif common_area <= HEIGHT * WIDTH:
+        if pack_polyomino(pol_list, grid_occupation, show_grid=False):
+            print('SUCCESS: Polyomino can be packed to the grid.')
+            plot_grid(grid_occupation)
+        else:
+            print('Polyomino can NOT be packed to the grid.')
+    else:
+        print('Polyomino can NOT be packed to the grid: common area of figures > size of grid')
