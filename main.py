@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import colors
 from abc import ABC, abstractmethod
 
 HEIGHT = 7
@@ -177,51 +176,40 @@ class RPolyomino(Polyomino):
         return f'RP: size={self.size}, area={self.area}, perimeter={self.perimeter}'
 
 
-def is_square(figure: Polyomino):
-    return isinstance(figure, RPolyomino) and figure.size[0] == figure.size[1]
-
-
-# polyomino_list = [RPolyomino(size=(2, 2)), LPolyomino(size=(3, 2)), LPolyomino(size=(2, 2)), LPolyomino(size=(2, 2))]
 polyomino_list = [LPolyomino(size=(4, 2)), RPolyomino(size=(3, 2)),
-                  LPolyomino(size=(3, 2)), LPolyomino(size=(2, 2)), RPolyomino(size=(1, 2)), LPolyomino(size=(2, 2)),
-                  RPolyomino(size=(1, 3)), LPolyomino(size=(2, 2))]
-
+                  LPolyomino(size=(3, 2)), LPolyomino(size=(2, 2)),
+                  RPolyomino(size=(1, 2)), LPolyomino(size=(2, 2)), ]
 polyomino_list.sort(key=lambda x: (x.perimeter, -x.area), reverse=True)
-# print(polyomino_list)
 
 grid_distances, arcs = init_distances(grid_distances)
-# print_grid(grid_distances)
-# print(coords)
 
-example = LPolyomino(size=(3, 2))
-example.place_figure(0, 2)
-print(example.coordinates)
-for num in range(1, NUM_OF_ROTATIONS):
-    example.rotate(num)
-    print(example.coordinates)
+if __name__ == "__main__":
+    def pack_polyomino(polyomino_list: list[Polyomino], grid: list, show_grid: bool = False) -> bool:
+        for num, polyomino in enumerate(polyomino_list):
+            possibles_places = list()
+            for rotation_num in range(NUM_OF_ROTATIONS):
+                for coord in arcs:
+                    polyomino.place_figure(0, 0)
+                    polyomino.rotate(rotation_num)
+                    polyomino.move_figure(coord[0], coord[1])
+                    if are_coords_free(polyomino.coordinates, grid):
+                        possibles_places.append(
+                            (polyomino.coordinates, sum_distances(polyomino.coordinates, grid_distances)))
+
+            if len(possibles_places) != 0:
+                place = find_best_place(possibles_places)
+                grid = place_figure_to_grid(place[0], grid, num + 1)
+                exclude_coordinates(place[0], arcs)
+            else:
+                return False
+
+            if show_grid:
+                print('---' * 3)
+                print(f'Figure {num + 1}: {polyomino}')
+                print_grid(grid)
+
+        return True
 
 
-def pack_polyomino(polyomino_list: list[Polyomino], grid: list) -> bool:
-    for num, polyomino in enumerate(polyomino_list):
-        print('---' * 3)
-        possibles_places = list()
-        print(f'Figure {num + 1}: {polyomino}')
-        for rotation_num in range(NUM_OF_ROTATIONS):
-            for coord in arcs:  # todo: create generator
-                polyomino.place_figure(0, 0)
-                polyomino.rotate(rotation_num)
-                polyomino.move_figure(coord[0], coord[1])
-                # print(arcs)
-                # print(f'rot num: {rotation_num}, coord - {coord}, pol coords: {polyomino.coordinates}')
-                if are_coords_free(polyomino.coordinates, grid):
-                    possibles_places.append(
-                        (polyomino.coordinates, sum_distances(polyomino.coordinates, grid_distances)))
-
-        if len(possibles_places) != 0:
-            place = find_best_place(possibles_places)
-            grid = place_figure_to_grid(place[0], grid, num + 1)
-            # print(f'pos places {possibles_places}')
-            # print(f'best place {place[0]}')
-            exclude_coordinates(place[0], arcs)
-        print_grid(grid)
-    plot_grid(grid)
+    print(pack_polyomino(polyomino_list, grid_occupation))
+    plot_grid(grid_occupation)
