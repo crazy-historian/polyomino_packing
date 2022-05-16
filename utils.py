@@ -61,10 +61,9 @@ def count_cost(figure_coords: list) -> int:
     Count the cost of the possible figure position.
     """
     cost = 0
+
     for coord in figure_coords:
-        # cost += coord[0] + coord[1] + max(coord[0], coord[1])
         cost += coord[0] + coord[1]
-        # cost += max(coord[0], coord[1])
 
     return cost
 

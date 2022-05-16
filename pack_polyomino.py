@@ -3,24 +3,10 @@ import argparse
 from polyomino import *
 from utils import *
 
-parser = argparse.ArgumentParser(description='Packing polyomino in a grid')
-parser.add_argument('-grid_size', nargs=2, type=int)
-parser.add_argument('-l_polyomino', type=int, nargs='+',
-                    action='append', help='Each L-polyomino described with triple of numbers:'
-                                          'length, ledge and number of instances')
-parser.add_argument('-r_polyomino', type=int, nargs='+',
-                    action='append', help='Each rectangular polyomino described with triple of numbers:'
-                                          'width, height and number of instances')
-args = parser.parse_args()
-
-HEIGHT = args.grid_size[0]
-WIDTH = args.grid_size[1]
 NUM_OF_ROTATIONS = 4
 
-grid_occupation = [[0 for _ in range(WIDTH)] for _ in range(HEIGHT)]
 
-
-def pack_polyomino(polyomino_list: list[Polyomino], grid: list, radii: list, show_grid: bool = False) -> bool:
+def pack_polyomino_to_grid(polyomino_list: list[Polyomino], grid: list, radii: list, show_grid: bool = False) -> bool:
     for num, figure in enumerate(polyomino_list):
         possibles_places = list()
         for radius in radii:
@@ -52,6 +38,20 @@ def pack_polyomino(polyomino_list: list[Polyomino], grid: list, radii: list, sho
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Packing polyomino in a grid')
+    parser.add_argument('-grid_height', type=int)
+    parser.add_argument('-grid_width', type=int)
+    parser.add_argument('-l_polyomino', type=int, nargs='+',
+                        action='append', help='Each L-polyomino described with triple of numbers: '
+                                              'length, ledge and number of instances')
+    parser.add_argument('-r_polyomino', type=int, nargs='+',
+                        action='append', help='Each rectangular polyomino described with triple of numbers: '
+                                              'width, height and number of instances')
+    args = parser.parse_args()
+    HEIGHT = args.grid_height
+    WIDTH = args.grid_width
+
+    grid_occupation = [[0 for _ in range(WIDTH)] for _ in range(HEIGHT)]
 
     pol_list = list()
     common_area = 0
@@ -77,7 +77,7 @@ if __name__ == "__main__":
     if len(pol_list) == 0:
         print('Polyomino can NOT be packed to the grid: the list of figures is empty')
     elif common_area <= HEIGHT * WIDTH:
-        if pack_polyomino(pol_list, grid_occupation, show_grid=False, radii=grid_radii):
+        if pack_polyomino_to_grid(pol_list, grid_occupation, show_grid=False, radii=grid_radii):
             print('SUCCESS: Polyomino can be packed to the grid.')
             plot_grid(grid_occupation)
         else:
