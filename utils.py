@@ -23,11 +23,9 @@ def init_distances(height: int, width: int) -> list:
     """
     Fill in the distance matrix with the appropriate values.
     """
-    coordinates = list()
-    coordinates.append([0, 0])
-    # radii = list()
+    radii = list()
     for i in range(1, height):
-        # coordinates = list()
+        coordinates = list()
         for j in range(i + 1):
             if i < width:
                 coordinates.append([j, i])
@@ -36,10 +34,11 @@ def init_distances(height: int, width: int) -> list:
             if j <= width:
                 coordinates.append([i, j - 1])
 
-        # radii.append(coordinates)
+        radii.append(coordinates)
 
-    # radii.insert(0, [0, 0])
-    return coordinates
+    radii.insert(0, [[0, 0]])
+
+    return radii
 
 
 def are_coords_free(figure_coords: list, grid: list[list[int]]) -> True:
@@ -63,7 +62,9 @@ def count_cost(figure_coords: list) -> int:
     """
     cost = 0
     for coord in figure_coords:
-        cost += coord[0] + coord[1] + max(coord[0], coord[1])
+        # cost += coord[0] + coord[1] + max(coord[0], coord[1])
+        cost += coord[0] + coord[1]
+        # cost += max(coord[0], coord[1])
 
     return cost
 
@@ -90,10 +91,16 @@ def find_best_place(places: list[tuple[list, int]]) -> tuple[list, int]:
     return best_place
 
 
-def exclude_coordinates(figure_coordinates: list[list[int]], arcs: list[int]) -> list[int]:
+def exclude_coordinates_from_radii(figure_coordinates: list[list[int]], radii: list) -> list:
     """
     Remove occupied coordinates from the list of possible ones.
     """
     for coord in figure_coordinates:
-        arcs.remove(coord)
-    return arcs
+        for num, radius in enumerate(radii):
+            try:
+                radius.remove(coord)
+                if len(radius) == 0:
+                    radii.pop(num)
+            except ValueError:
+                ...
+    return radii
