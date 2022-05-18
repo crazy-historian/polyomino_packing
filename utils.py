@@ -102,3 +102,18 @@ def exclude_coordinates_from_radii(figure_coordinates: list[list[int]], radii: l
             except ValueError:
                 ...
     return radii
+
+
+def exclude_coordinates(figure_coordinates, places):
+    for coord in figure_coordinates:
+        try:
+            places.remove(coord)
+        except ValueError:
+            ...
+    return places
+
+
+def exclude_figure(figure_num, figures):
+    if len(figures) != 0:
+        figures.pop(figure_num)
+    return figures
