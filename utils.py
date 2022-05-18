@@ -23,35 +23,34 @@ def init_distances(height: int, width: int) -> list:
     """
     Fill in the distance matrix with the appropriate values.
     """
-    radii = list()
+    # radii = list()
+    places = list()
     for i in range(1, height):
-        coordinates = list()
+        # coordinates = list()
         for j in range(i + 1):
             if i < width:
-                coordinates.append([j, i])
+                # coordinates.append([j, i])
+                places.append([j, i])
 
         for j in range(i, 0, -1):
             if j <= width:
-                coordinates.append([i, j - 1])
+                # coordinates.append([i, j - 1])
+                places.append([i, j - 1])
 
-        radii.append(coordinates)
+        # radii.append(coordinates)
 
-    radii.insert(0, [[0, 0]])
+    # radii.insert(0, [[0, 0]])
+    places.insert(0, [0, 0])
 
-    return radii
+    return places
 
 
-def are_coords_free(figure_coords: list, grid: list[list[int]]) -> True:
+def are_coords_free(figure_coords: list, grid_coords: list) -> True:
     """
     Check the passed coordinates that they exist and are free.
     """
     for coord in figure_coords:
-        if coord[0] < 0 or coord[1] < 0:
-            return False
-        try:
-            if grid[coord[0]][coord[1]] != 0:
-                return False
-        except IndexError:
+        if coord not in grid_coords:
             return False
     return True
 

@@ -7,7 +7,8 @@ class Polyomino(ABC):
     """
     An abstract type of the polyomino which defines the necessary properties and methods
     """
-    def __init__(self, size: tuple):
+    def __init__(self, id_num: int, size: tuple):
+        self.id_num = id_num
         self.size = size
         self.area = self._count_area()
         self.perimeter = self._count_perimeter()
@@ -53,9 +54,9 @@ class LPolyomino(Polyomino):
     # # -- (3, 2) L-polyomino
 
     """
-    def __init__(self, size: tuple):
+    def __init__(self, id_num: int, size: tuple):
         self.length = max(size)
-        super().__init__(size)
+        super().__init__(id_num, size)
 
     def _count_area(self):
         return self.size[0] + self.size[1] - 1
@@ -66,9 +67,9 @@ class LPolyomino(Polyomino):
     def place_figure(self, x: int, y: int):
         self.coordinates = list()
         for i in range(self.length):
-            self.coordinates.append([x, y + i])
+            self.coordinates.append([x + i, y])
 
-        self.coordinates.append([x + 1, y])
+        self.coordinates.append([x, y + 1])
 
     def __repr__(self):
         return f'LP: size={self.size}, area={self.area}, perimeter={self.perimeter}'
@@ -78,8 +79,8 @@ class RPolyomino(Polyomino):
     """
      An implementation of Polyomino type for rectangular polyomino.
     """
-    def __init__(self, size: tuple):
-        super().__init__(size)
+    def __init__(self, id_num: int, size: tuple):
+        super().__init__(id_num, size)
 
     def _count_perimeter(self) -> int:
         return 2 * self.size[0] + 2 * self.size[1]
