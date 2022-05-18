@@ -64,7 +64,7 @@ class LPolyomino(Polyomino):
         return self.size[0] + self.size[1] - 1
 
     def _count_perimeter(self) -> int:
-        return (self.size[0] * 2 + 2) - (self.size[1] * 2 + 2) - 4
+        return (self.size[0] * 2 + 2) + (self.size[1] * 2 + 2) - 4
 
     def place_figure(self, x: int, y: int):
         self.coordinates = list()
@@ -75,7 +75,7 @@ class LPolyomino(Polyomino):
             self.coordinates.append([x, y + j])
 
     def __repr__(self):
-        return f'LP: size={self.size}, area={self.area}, perimeter={self.perimeter}'
+        return f'LP {self.id_num}: size={self.size}'
 
 
 class RPolyomino(Polyomino):
@@ -99,4 +99,4 @@ class RPolyomino(Polyomino):
                 self.coordinates.append([x + i, y + j])
 
     def __repr__(self):
-        return f'RP: size={self.size}, area={self.area}, perimeter={self.perimeter}'
+        return f'RP {self.id_num}: size={self.size}'

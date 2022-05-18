@@ -19,27 +19,20 @@ def print_grid(grid: list[list[int]]) -> None:
         print(line, end='\n')
 
 
-def init_distances(height: int, width: int) -> list:
+def get_places(height: int, width: int) -> list:
     """
     Fill in the distance matrix with the appropriate values.
     """
-    # radii = list()
     places = list()
     for i in range(1, height):
-        # coordinates = list()
         for j in range(i + 1):
             if i < width:
-                # coordinates.append([j, i])
                 places.append([j, i])
 
         for j in range(i, 0, -1):
             if j <= width:
-                # coordinates.append([i, j - 1])
                 places.append([i, j - 1])
 
-        # radii.append(coordinates)
-
-    # radii.insert(0, [[0, 0]])
     places.insert(0, [0, 0])
 
     return places
@@ -76,34 +69,6 @@ def place_figure_to_grid(figure_coords: list, grid: list[list[int]], figure_num:
     return grid
 
 
-def find_best_place(places: list[tuple[list, int]]) -> tuple[list, int]:
-    """
-    Find the first minimal cost value and return the coordinates.
-    """
-    min_sum = float('inf')
-    best_place = list()
-    for index, place in enumerate(places):
-        if place[1] < min_sum:
-            min_sum = place[1]
-            best_place = place
-    return best_place
-
-
-def exclude_coordinates_from_radii(figure_coordinates: list[list[int]], radii: list) -> list:
-    """
-    Remove occupied coordinates from the list of possible ones.
-    """
-    for coord in figure_coordinates:
-        for num, radius in enumerate(radii):
-            try:
-                radius.remove(coord)
-                if len(radius) == 0:
-                    radii.pop(num)
-            except ValueError:
-                ...
-    return radii
-
-
 def exclude_coordinates(figure_coordinates, places):
     for coord in figure_coordinates:
         try:
@@ -112,8 +77,3 @@ def exclude_coordinates(figure_coordinates, places):
             ...
     return places
 
-
-def exclude_figure(figure_num, figures):
-    if len(figures) != 0:
-        figures.pop(figure_num)
-    return figures
