@@ -21,19 +21,12 @@ def print_grid(grid: list[list[int]]) -> None:
 
 def get_places(height: int, width: int) -> list:
     """
-    Fill in the distance matrix with the appropriate values.
+    Return all grid coordinates as a list.
     """
     places = list()
-    for i in range(1, height):
-        for j in range(i + 1):
-            if i < width:
-                places.append([j, i])
-
-        for j in range(i, 0, -1):
-            if j <= width:
-                places.append([i, j - 1])
-
-    places.insert(0, [0, 0])
+    for i in range(height):
+        for j in range(width):
+            places.append([i, j])
 
     return places
 
@@ -60,7 +53,7 @@ def count_cost(figure_coords: list) -> int:
     return cost
 
 
-def place_figure_to_grid(figure_coords: list, grid: list[list[int]], figure_num: int) -> list:
+def set_value_to_grid(figure_coords: list, grid: list[list[int]], figure_num: int) -> list:
     """
     Change the value of the corresponding coordinates to the figure number.
     """
@@ -70,10 +63,12 @@ def place_figure_to_grid(figure_coords: list, grid: list[list[int]], figure_num:
 
 
 def exclude_coordinates(figure_coordinates, places):
+    """
+    Delete occupied coordinates from the list
+    """
     for coord in figure_coordinates:
         try:
             places.remove(coord)
         except ValueError:
             ...
     return places
-

@@ -54,6 +54,11 @@ class LPolyomino(Polyomino):
     #
     # # -- (3, 2) L-polyomino
 
+    #
+    #
+    #
+    # # # # -- (4, 4) L-polyomino
+
     """
 
     def __init__(self, size: tuple, id_num: Optional[int] = None):
