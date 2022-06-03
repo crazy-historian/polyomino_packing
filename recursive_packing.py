@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
     if args.r_polyomino is not None:
         for r_polyomino in args.r_polyomino:
-            print(f'R-polyomino, size=({r_polyomino[0], l_polyomino[1]}, number of instances: {r_polyomino[2]})')
+            print(f'R-polyomino, size=({r_polyomino[0], r_polyomino[1]}, number of instances: {r_polyomino[2]})')
             for _ in range(r_polyomino[2]):
                 polyomino = RPolyomino(id_num=figure_num, size=(r_polyomino[0], r_polyomino[1]))
                 polyomino_list.append(polyomino)
